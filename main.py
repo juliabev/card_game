@@ -7,7 +7,11 @@ def main():
 if __name__ == "__main__":
     main()
 
-player1 = [1,1,1]
 
-from analysis import getp2combo
-print(getp2combo(player1))
+from analysis import getp1combo, getp2combo
+
+p1 = getp1combo()
+p2 = getp2combo(p1)
+
+print(p1)
+print(p2)
