@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-full_deck = [0]*26 + [1]*26
+#full_deck = [0]*26 + [1]*26
 #shuffled_deck = random.shuffle(full_deck)
 
 
@@ -24,7 +24,7 @@ def getp2combo(list) -> list: # type hinting
     a, b, c = player1
     return [1 - b, a, b]
 
-def shuffle(list) -> list:
+def shuffle(full_deck: list) -> list:
     '''
     Shuffle deck.
     '''
@@ -32,7 +32,21 @@ def shuffle(list) -> list:
     random.shuffle(shuffled_deck)
     return shuffled_deck
 
-def cardgame(list):
+def cardgame(deck: list, p1: list, p2: list):
     '''
-    When you give a deck of 
+    Using the deck provided, this function will give the windows of the deck
     '''
+    for i in range(len(deck)-2):
+        set_of_three = deck[i:i+3]
+        print(set_of_three)
+
+        if set_of_three == p1:
+            print(f'Player 1, your choice was matched! the combination {p1} matched {set_of_three}')
+            #break
+        if set_of_three == p2:
+            print(f'Player 2, your choice was matched! the combination {p2} matched {set_of_three}')
+            #break
+
+
+
+
