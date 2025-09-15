@@ -1,13 +1,9 @@
 import numpy as np
 import random
 
-
-
 full_deck = [0]*26 + [1]*26
-shuffled_deck = random.shuffle(full_deck)
+#shuffled_deck = random.shuffle(full_deck)
 
-
-random.shuffle()
 
 player1 = [0,0,0]
 
@@ -27,6 +23,14 @@ def getp2combo(list) -> list: # type hinting
 
     a, b, c = player1
     return [1 - b, a, b]
+
+def shuffle(list) -> list:
+    '''
+    Shuffle deck.
+    '''
+    shuffled_deck = full_deck.copy()
+    random.shuffle(shuffled_deck)
+    return shuffled_deck
 
 def cardgame(list):
     '''
