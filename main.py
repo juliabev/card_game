@@ -22,4 +22,5 @@ full_deck = [0]*26 + [1]*26
 deck = shuffle(full_deck)
 print(deck)
 
-cardgame(deck, p1, p2)
+p1_tricks, p2_tricks, p1_points, p2_points = cardgame(deck, p1, p2)
+print(f'Final point scores: Player 1 has {p1_tricks} tricks, Player 2 has {p2_tricks} tricks. Player 1 has {p1_points} points, and Player 2 has {p2_points} points.')

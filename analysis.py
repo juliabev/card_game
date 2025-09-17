@@ -36,16 +36,32 @@ def cardgame(deck: list, p1: list, p2: list):
     '''
     Using the deck provided, this function will give the windows of the deck
     '''
+    p1_tricks = 0
+    p2_tricks = 0
+
+    p1_points = 0
+    p2_points = 0
+
+    count = 0
     for i in range(len(deck)-2):
+        count += 1
+
         set_of_three = deck[i:i+3]
-        print(set_of_three)
+        print(i, set_of_three)
 
         if set_of_three == p1:
             print(f'Player 1, your choice was matched! the combination {p1} matched {set_of_three}')
-            #break
-        if set_of_three == p2:
+            p1_tricks += 1
+            p1_points += count
+            count = 0
+            
+        elif set_of_three == p2:
             print(f'Player 2, your choice was matched! the combination {p2} matched {set_of_three}')
-            #break
+            p2_tricks += 1
+            p2_points += count
+            count = 0
+
+    return p1_tricks, p2_tricks, p1_points, p2_points
 
 
 
