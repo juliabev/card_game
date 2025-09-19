@@ -97,82 +97,23 @@ def run_cardgame_on_files(num_files=1, decks_per_file = 1, p1_options = None, p2
         deck_file = f'_scoredDecks_{num_files}_n={decks_per_file}.npy'
         decks = np.load(deck_file)
 
-        for deck in decks: # going through each deck
+        results = np.zeros((decks_per_file, len(p1_options), len(p2_options), 4), dtype=int)
+
+        for deck_idx, deck in enumerate(decks): # going through each deck
             #print(deck)
-            for p1_combo in p1_options:
-                for p2_combo in p2_options:
+            for p1_idx, p1_combo in enumerate(p1_options):
+                for p2_idx, p2_combo in enumerate(p2_options):
                     if p1_combo == p2_combo:
                         continue # skips the identical combos
                         #print(p1_combo, p2_combo)
                     p1_tricks, p2_tricks, p1_points, p2_points = cardgame(deck.tolist(), p1_combo, p2_combo)
                         
-
-        #print(f'processed {deck_file}')
-
-
-
-
-
-
-
-
-
-
-def simulate(num_decks: int, deck: list, p1: list, p2: list):
-    results = {
-        "p1_tricks": 0,
-        "p2_tricks": 0,
-        "p1_points": 0,
-        "p2_points": 0
-    }
-    for _ in range(num_decks):
-        p1_tricks, p2_tricks, p1_points, p2_points = cardgame(deck, p1, p2)
-
-        results["p1_tricks"] += p1_tricks
-        results["p2_tricks"] += p2_tricks
-        results["p1_points"] += p1_points
-        results["p2_points"] += p2_points
+                    results[deck_idx, p1_idx, p2_idx] = [p1_tricks, p2_tricks, p1_points, p2_points]
+        
+        out_file = f'_results_{file_idx}.npy'
+        np.save(out_file, results)
+        print(f'Processed {deck_file} -> Saved {out_file} with shape {results.shape}')
     return results
 
-
-def batch_filename(batch_idx: int, batch_size: int, out_dir: str) -> str:
-    '''
-    Creates filenames based on naming convention
-    '''
-    return os.path.join(out_dir, f'_scoredDecks_{batch_idx}_n={batch_size}.npy')
-
-    
-
-
-def save_data(deck: np.ndarray, filename: str) -> None:
-    """
-    Save a numpy array in the default output directory,
-    ensuring that the directory exists.
-    """
-    full_filename = os.path.join(PATH_DATA, filename)
-
-    arrs = []
-    arr = np.array(deck, dtype = str)
-    arrs.append(arr)
-    print(f'{d} : {arr.nbytes}')
-
-    if not os.path.exists(PATH_DATA):
-        os.mkdir(PATH_DATA)
-    
-    if type(data) != np.ndarray:
-        raise TypeError(f'data shoudl be np.ndarray not {type(data)}')
-    else:
-        if os.path.exists(full_filename):
-            raise FileExistsError(f'{full_filename} already exists, select a new name!')
-        np.save(full_filename, data)
-
-    return None
-
-def load_data(filename: str) -> np.ndarray:
-    """
-    Loads data from an .npy file located
-    in the default directory
-    """
-    return np.load(os.path.join(PATH_DATA, filename))
 
 
