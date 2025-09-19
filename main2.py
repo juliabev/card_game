@@ -7,7 +7,7 @@ OUT_DIR = "Data"
 
 # gen batches
 for i in range(math.ceil(TOTAL_DECKS / BATCH_SIZE)):
-    print(f"Running batch {i+1}/{math.ceil(TOTAL_DECKS / BATCH_SIZE)} ...")s
+    print(f"Running batch {i+1}/{math.ceil(TOTAL_DECKS / BATCH_SIZE)} ...")
     a2.simulate_batch(i, BATCH_SIZE, OUT_DIR)
 
 # summarize results
