@@ -1,119 +1,192 @@
 import numpy as np
-import random
-import os
+import os, time, math, random, json
+from typing import Tuple
 
-PATH_DATA = 'data'
-
-#full_deck = [0]*26 + [1]*26
-#shuffled_deck = random.shuffle(full_deck)
+SEQUENCES = ['000','001','010','011','100','101','110','111']  # player1 rows, player 2 columns
 
 
-player1 = ['','' ,'']
-
-def getp1combo() -> list:
+def score_deck(deck: str, seq1: str, seq2: str) -> Tuple[int,int,int,int]:
+    ''' 
+    Greedy trick-taking and 'pile' cards scoring on a single 52-char deck string ('0'/'1').
+    Returns: p1_cards, p2_cards, p1_tricks, p2_tricks
     '''
-    Gives a random player 1 combo in the form of a list
-    '''
-    for index in range(len(player1)):
-        player1[index] = random.choice(('R','B'))
-    return player1
+    p1_cards = 0
+    p2_cards = 0
+    pile = 2  # first check is at 3
 
-def getp2combo(list) -> list: # type hinting
-    """
-    Return a list of 3 choices that gives the best probability of winning the 
-    humble nishiyama randomness game
-    """ # docstring
-    a, b, c = player1  # unpack
-    flip = {"R": "B", "B": "R"}  # mapping to "not"
-    return [flip[b], a, b]
-
-def shuffle(full_deck: list) -> list:
-    '''
-    Shuffle deck.
-    '''
-    shuffled_deck = full_deck.copy()
-    random.shuffle(shuffled_deck)
-    return shuffled_deck
-
-def generate_deck_files(full_deck: list, num_files = 1, decks_per_file = 1):
-    '''
-    Generate shuffled decks of 'R' and 'B' and saves them as 200 .npy files
-    Each file contains an array of shape (decks_per_file, 52) with dtype str
-    '''
-    for file_idx in range(num_files):
-        arr = np.empty((decks_per_file, 52), dtype=str)
-
-        for i in range(decks_per_file):
-            arr[i] = shuffle(full_deck)
-        
-        # save file
-        filename = f'_scoredDecks_{num_files}_n={decks_per_file}.npy'
-        np.save(filename, arr)
-        print(f'Saved {filename} with shape {arr.shape}')
-
-
-def cardgame(deck: list, p1: list, p2: list):
-    '''
-    Using the deck provided, this function will give the windows of the deck
-    '''
     p1_tricks = 0
     p2_tricks = 0
 
-    p1_points = 0
-    p2_points = 0
-
-    count = 0
-    for i in range(len(deck)-2):
-        count += 1
-
-        set_of_three = deck[i:i+3]
-        print(set_of_three, "vs p1:", p1, "vs p2:", p2)
-
-
-        if set_of_three == p1:
-            print(f"--> MATCH for P1 at window {i}, count={count}")
+    i = 0
+    n = len(deck)
+    while i < n - 2:
+        pile += 1
+        window = deck[i:i+3]
+        if window == seq1:
+            p1_cards += pile
+            pile = 2
             p1_tricks += 1
-            p1_points += count
-            count = 0
-            #print(f'you have a match p1')
-            
-        elif set_of_three == p2:
-            print(f"--> MATCH for P2 at window {i}, count={count}")
+            i += 3
+        elif window == seq2:
+            p2_cards += pile
+            pile = 2
             p2_tricks += 1
-            p2_points += count
-            count = 0
-            #print(f'you have a match p2')
-    print(f" [DEBUG] Final scores: p1_tricks={p1_tricks}, p2_tricks={p2_tricks}, p1_points={p1_points}, p2_points={p2_points}")
+            i += 3
+        else:
+            i += 1
+    return p1_cards, p2_cards, p1_tricks, p2_tricks
 
-    return p1_tricks, p2_tricks, p1_points, p2_points
-
-def run_cardgame_on_files(num_files=1, decks_per_file = 1, p1_options = None, p2_options = None):
+def calculate_winner(p1_cards: int, p2_cards: int, p1_tricks: int, p2_tricks: int) -> Tuple[int,int,int,int]:
     '''
-    Loops over the deck files, runs cardgame function on each deck, and
-    saves results. Each result file will be a NumPy array of shape
-    (decks_per_file, 8, 8, 2)
+    Calculates winning player.
+    Returns (cards_winner, cards_draw, tricks_winner, tricks_draw) where winners are 0 (player1) or 1 (player2), draws are {0,1}.
     '''
-    for file_idx in range(num_files): # going through each file
-        deck_file = f'_scoredDecks_{num_files}_n={decks_per_file}.npy'
-        decks = np.load(deck_file)
+    cards_winner = 0
+    cards_draw = 0
+    tricks_winner = 0
+    tricks_draw = 0
 
-        results = np.zeros((decks_per_file, len(p1_options), len(p2_options), 4), dtype=int)
+    if p1_cards < p2_cards:
+        cards_winner = 1
+    elif p1_cards == p2_cards:
+        cards_draw = 1
 
-        for deck_idx, deck in enumerate(decks): # going through each deck
-            #print(deck)
-            for p1_idx, p1_combo in enumerate(p1_options):
-                for p2_idx, p2_combo in enumerate(p2_options):
-                    if p1_combo == p2_combo:
-                        continue # skips the identical combos
-                        #print(p1_combo, p2_combo)
-                    p1_tricks, p2_tricks, p1_points, p2_points = cardgame(deck.tolist(), p1_combo, p2_combo)
-                        
-                    results[deck_idx, p1_idx, p2_idx] = [p1_tricks, p2_tricks, p1_points, p2_points]
-        
-        out_file = f'_results_{file_idx}.npy'
-        np.save(out_file, results)
-        print(f'Processed {deck_file} -> Saved {out_file} with shape {results.shape}')
+    if p1_tricks < p2_tricks:
+        tricks_winner = 1
+    elif p1_tricks == p2_tricks:
+        tricks_draw = 1
+
+    return cards_winner, cards_draw, tricks_winner, tricks_draw
+
+# functions below are to aid in simulations
+
+def gen_deck_str(rng: random.Random) -> str:
+    '''
+    26 zeros + 26 ones; shuffled without replacement; return as '0/1' string
+    '''
+    deck = ['0'] * 26 + ['1'] * 26
+    rng.shuffle(deck)
+    return ''.join(deck)
+
+# 
+def score_all_matchups_for_deck(deck: str) -> np.ndarray:
+    '''
+    Build a (2, 8, 8) integer 8 matrix of results for this deck:
+    metric 0 = cards & metric 1 = tricks; cell in {-1, 0, +1}
+    -1 stands for player 2 wins, +1 stands for player 1 wins, 0 = tie
+    '''
+    cards = np.zeros((8,8), dtype=np.int8)
+    tricks = np.zeros((8,8), dtype=np.int8)
+
+    for r, s1 in enumerate(SEQUENCES):        # p1 = row
+        for c, s2 in enumerate(SEQUENCES):    # p2 = col
+            p1c, p2c, p1t, p2t = score_deck(deck, s1, s2)
+            cw, cd, tw, td = calculate_winner(p1c, p2c, p1t, p2t)
+
+            # Convert to results of: +1=P2 win, -1=P1 win, 0=tie
+            cards[r, c]  =  1 if cd == 0 and cw == 1 else (-1 if cd == 0 and cw == 0 else 0)
+            tricks[r, c] =  1 if td == 0 and tw == 1 else (-1 if td == 0 and tw == 0 else 0)
+
+    out = np.zeros((2,8,8), dtype=np.int8)
+    out[0] = cards
+    out[1] = tricks
+    return out
+
+
+def ensure_dir(path: str):
+    '''
+    Checks that directory for raw data file exists.
+    '''
+    os.makedirs(path, exist_ok=True)
+
+def batch_filename(batch_idx: int, batch_size: int, out_dir: str) -> str:
+    '''
+    Creates filenames based on naming convention.
+    '''
+    return os.path.join(out_dir, f'_scoredDecks_{batch_idx}_n={batch_size}.npy')
+
+def simulate_batch(batch_idx: int, batch_size: int, out_dir: str, seed: int = 12345) -> str:
+    '''
+    Simulate one batch of decks; save (batch, 2, 8, 8) int8 to .npy; return filepath.
+    '''
+    ensure_dir(out_dir)
+    rng = random.Random(seed + batch_idx)
+
+    res = np.empty((batch_size, 2, 8, 8), dtype=np.int8)
+    for i in range(batch_size):
+        deck = gen_deck_str(rng)
+        res[i] = score_all_matchups_for_deck(deck)
+
+    path = batch_filename(batch_idx, batch_size, out_dir)
+    np.save(path, res)
+    return path
+
+def summarize(out_dir: str) -> str:
+    '''
+    Read all _scoredDecks_*.npy files; produce summary.json with 8x8 probabilities.
+    '''
+    # vars for tallying total scores
+    cards_p2   = np.zeros((8,8), dtype=np.int64)
+    cards_ties = np.zeros((8,8), dtype=np.int64)
+    cards_tot  = np.zeros((8,8), dtype=np.int64)
+
+    tricks_p2   = np.zeros((8,8), dtype=np.int64)
+    tricks_ties = np.zeros((8,8), dtype=np.int64)
+    tricks_tot  = np.zeros((8,8), dtype=np.int64)
+
+    # iterating through Data directory
+    for fname in sorted(os.listdir(out_dir)):
+        if not (fname.startswith('_scoredDecks_') and fname.endswith('.npy')):
+            continue
+        # loading in files from the data folder
+        arr = np.load(os.path.join(out_dir, fname))  # (n,2,8,8)
+
+        # array values 
+        cards_res  = arr[:, 0, :, :]  # -1 is player/ /+1
+        tricks_res = arr[:, 1, :, :]
+
+        cards_p2   += (cards_res  ==  1).sum(axis=0)
+        cards_ties += (cards_res  ==  0).sum(axis=0)
+        cards_tot  += cards_res.shape[0]
+
+        tricks_p2   += (tricks_res ==  1).sum(axis=0)
+        tricks_ties += (tricks_res ==  0).sum(axis=0)
+        tricks_tot  += tricks_res.shape[0]
+
+    def safe_div(a, b):
+        '''
+        Divides a by b but prevents division errors due to divison by 0. 
+        '''
+        out = np.divide(a, b, where=(b!=0), dtype=float)
+        out[b==0] = 0.0
+        return out
+
+    summary = {
+        'cards': safe_div(cards_p2, cards_tot).tolist(),
+        'tricks': safe_div(tricks_p2, tricks_tot).tolist(),
+        'card_ties': safe_div(cards_ties, cards_tot).tolist(),
+        'trick_ties': safe_div(tricks_ties, tricks_tot).tolist(),
+    }
+
+    with open(os.path.join(out_dir, 'summary.json'), 'w', encoding='utf-8') as f:
+        json.dump(summary, f, indent=2)
+    return os.path.join(out_dir, 'summary.json')
+
+# quantitative test
+
+def perf_probe(out_dir: str, batch_size: int = 10_000, batches: int = 2) -> dict:
+    ensure_dir(out_dir)
+    results = {'batch_idx': [], 'gen_score_time_s': [], 'write_time_s': [], 'file_mb': []}
+    for b in range(batches):
+        t0 = time.perf_counter()
+        path = simulate_batch(b, batch_size, out_dir)
+        t1 = time.perf_counter()
+        size_mb = os.path.getsize(path) / (1024**2)
+        t2 = time.perf_counter()
+        results['batch_idx'].append(b)
+        results['gen_score_time_s'].append(t1 - t0)
+        results['write_time_s'].append(t2 - t1)
+        results['file_mb'].append(size_mb)
+    with open(os.path.join(out_dir, 'perf_results.json'), 'w') as f:
+        json.dump(results, f, indent=2)
     return results
-
-
-
