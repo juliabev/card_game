@@ -3,29 +3,17 @@ import os, time, random, json
 from typing import Tuple
 
 
-# helpers
 def ensure_dir(path: str):
     '''
-    
+    Ensure directory exsists
     '''
     os.makedirs(path, exist_ok=True)
 
-# naming files
 def batch_filename_raw(batch_idx: int, batch_size: int, out_dir: str) -> str:
     '''
-    
+    Create filename for a raw deck batch stored as .npz
     '''
     return os.path.join(out_dir, f'_rawDecks_{batch_idx}_n={batch_size}.npz')
-
-# generating the deck
-def gen_deck_arr(rng: random.Random) -> np.ndarray:
-    '''
-    Return a (52,) uint8 array with exactly 26 zeros and 26 ones, shuffled.
-    '''
-
-    deck = np.array([0]*26 + [1]*26, dtype=np.uint8)
-    rng.shuffle(deck)
-    return deck
 
 def simulate_batch(batch_idx: int, batch_size: int, out_dir: str, seed: int = 12345) -> str:
     '''
@@ -35,20 +23,22 @@ def simulate_batch(batch_idx: int, batch_size: int, out_dir: str, seed: int = 12
     '''
 
     ensure_dir(out_dir)
-    rng = random.Random(seed + batch_idx)
 
+    rng = np.random.default_rng(seed + batch_idx)
+    base = np.array([0]*26 + [1]*26, dtype = np.uint8)
     decks = np.empty((batch_size, 52), dtype=np.uint8)
+
     for i in range(batch_size):
-        decks[i] = gen_deck_arr(rng)
+        decks[i] = rng.permutation(base)
 
     path = batch_filename_raw(batch_idx, batch_size, out_dir)
     np.savez_compressed(path, decks=decks)
     return path
 
 # performance
-def perf_probe(out_dir: str, batch_size: int = 10_000, batches: int = 2, seed: int = 12345) -> dict:
+def time_size_testing(out_dir: str, batch_size: int = 10_000, batches: int = 2, seed: int = 12345) -> dict:
     '''
-    Measure generation + write time for raw deck batches (no scoring).
+    Measure generation + write time for raw deck batches.
     Produces one .npz per batch and summarizes sizes/timings in perf_results.json
     '''
     ensure_dir(out_dir)

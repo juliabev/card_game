@@ -5,8 +5,8 @@ import math
 import time
 import os
 
-TOTAL_DECKS = 500_000
-BATCH_SIZE = 20_000
+TOTAL_DECKS = 2_000_000
+BATCH_SIZE = 10_000
 OUT_DIR = './raw_data'
 SEED = 12345
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     for b in range(n_batches):
         this_size = min(BATCH_SIZE, TOTAL_DECKS - prod)
         t0 = time.perf_counter()
-        path = dg2.simulate_batch(b, this_size, OUT_DIR, seed=SEED)
+        path = dg2.simulate_batch_str(b, this_size, OUT_DIR, seed=SEED)
         t1 = time.perf_counter()
         size_mb = os.path.getsize(path) / (1024**2)
 
