@@ -14,10 +14,9 @@ Method 2 generates randomized decks and all possible combination match-ups and s
 Method 1
 
 
-Table 1. Quantitative Testing (File Size & Time)
-|  | Method 1 | Method 2|
-| ----------- | ----------- |
-| Avg File Size (mb) | 0.1578 | 0.1578 |
-| Total File Size Size (mb) | 3.9441 | 3.9441 |
-| Avg Time Per File (s)| 0.3995 | 0.4048 |
-| Total Time (s) | 9.9871 | 10.1203 |
+| Metric                | Method 1 | Method 2 |
+| --------------------- | -------- | -------- |
+| Avg File Size (MB)    | 0.1578   | 0.1578   |
+| Total File Size (MB)  | 3.9441   | 3.9441   |
+| Avg Time Per File (s) | 0.3995   | 0.4048   |
+| Total Time (s)        | 9.9871   | 10.1203  |
