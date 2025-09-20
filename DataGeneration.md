@@ -1,6 +1,7 @@
-### Data Generation
-
+# Data Generation
+---
 Kayla Aviles & Julia Beverley
+
 
 #### Method 1:
 Method 1 creates random decks by generated a numpy array of numpy arrays. Each card is encoded as 0 and 1s
@@ -11,8 +12,10 @@ Method 2 generates randomized decks and all possible combination match-ups and s
 
 
 ### Which method is preferred?
-Method 1
+Method 1 is preferred as 
 
+
+Table 1. Quantitative Testing (Time & File Size)
 
 | Metric                | Method 1 | Method 2 |
 | --------------------- | -------- | -------- |
