@@ -19,7 +19,13 @@ Table 1. Quantitative Testing (Time & File Size)
 
 | Metric                | Method 1 | Method 2 |
 | --------------------- | -------- | -------- |
+<<<<<<< Updated upstream
 | Avg File Size (MB)    |  0.0791  | 0.0791   | 
 | Total File Size (MB)  | 15.8108  | 15.8108  |
 | Avg Time Per File (s) |  0.1107  |  0.196   |
 | Total Time (s)        | 22.135   |  39.197  |
+=======
+| Avg File Size (MB)    | 0.0791   | 0.0791   |
+| Total File Size (MB)  | 15.8108  | 15.8132  |
+| Avg Time Per File (s) | 0.0802   | 0.1248   |
+| Total Time (s)        | 16.0472  | 24.9645  |

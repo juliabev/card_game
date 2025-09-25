@@ -1,5 +1,4 @@
 import data_gen as dg
-import data_gen2 as dg2
 import json
 import math
 import time
