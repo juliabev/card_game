@@ -2,7 +2,7 @@
 
 ## Description
 
-Penney's Game is a two plater coin tossing game where each player will choose a sequence of heads (H) and tails (T) and the player with their sequence to first appear in the sequence of consecutive coin flips wins. Other variations of this game exist such as [Humble-Nishiyama Randomness Game](https://mathwo.github.io/assets/files/penney_game/humble-nishiyama_randomness_game-a_new_variation_on_penneys_coin_game.pdf)  which utilizes an ordinary deck of playing cards and follows the same format using red and black cards rather than heads and tails and the game iterates through the entire deck of cards.
+Penney's Game is a two player coin tossing game where each player will choose a sequence of heads (H) and tails (T) and the player with their sequence to first appear in the sequence of consecutive coin flips wins. Other variations of this game exist such as [Humble-Nishiyama Randomness Game](https://mathwo.github.io/assets/files/penney_game/humble-nishiyama_randomness_game-a_new_variation_on_penneys_coin_game.pdf)  which utilizes an ordinary deck of playing cards and follows the same format using red and black cards rather than heads and tails and the game iterates through the entire deck of cards.
 
 ## Quick-Start Guide
 
