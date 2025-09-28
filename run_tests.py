@@ -1,4 +1,6 @@
-import data_gen as dg
+import src.data_gen as dg
+import src.score as sc
+import src.viz as viz
 import json
 import math
 import time
@@ -6,12 +8,14 @@ import os
 
 TOTAL_DECKS = 2_000_000
 BATCH_SIZE = 10_000
-OUT_DIR = './raw_data'
+RAW_DIR = './raw_data'
+SOCRED_DIR = './scored_data'
+
 SEED = 12345
 
 if __name__ == '__main__':
 
-    dg.ensure_dir(OUT_DIR)
+    dg.ensure_dir(RAW_DIR)
     n_batches = math.ceil(TOTAL_DECKS / BATCH_SIZE)
     prod = 0
 
@@ -20,7 +24,7 @@ if __name__ == '__main__':
     for b in range(n_batches):
         this_size = min(BATCH_SIZE, TOTAL_DECKS - prod)
         t0 = time.perf_counter()
-        path = dg.simulate_batch(b, this_size, OUT_DIR, seed=SEED)
+        path = dg.simulate_batch(b, this_size, RAW_DIR, seed=SEED)
         t1 = time.perf_counter()
         size_mb = os.path.getsize(path) / (1024**2)
 
@@ -30,7 +34,7 @@ if __name__ == '__main__':
 
         prod += this_size
 
-    with open(os.path.join(OUT_DIR, 'perf_results.json'), 'w') as f:
+    with open(os.path.join(RAW_DIR, 'perf_results.json'), 'w') as f:
         json.dump(results, f, indent=2)
 
     print(json.dumps({
