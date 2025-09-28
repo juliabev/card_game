@@ -12,13 +12,11 @@ Once UV is installed, download the repository, navigate to the directory and run
 
 Run the program
 
-`uv run_tests.py`
+`uv run main.py`
 
 ## Contents
-`run_tests.py` Contains the functions to run tests shown to the user.
 
 `data_gen.py` Contains the functions and code used for generating a deck utilizing method 1 (described in `DataGeneration.md`)
 
-`data_gen2.py` Contains the functions and code used for generating a deck utilizing method 2 (described in `DataGeneration.md`)
 
 `raw_data` Contains the data generated (2 million entries)
