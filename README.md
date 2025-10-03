@@ -18,5 +18,6 @@ Run the program
 
 `data_gen.py` Contains the functions and code used for generating a deck utilizing method 1 (described in `DataGeneration.md`)
 
-
 `raw_data` Contains the data generated (2 million entries)
+
+`score_ju.py` runs and scores the decks and outputs a csv titled "scoring_results_head_to_head_1M"
