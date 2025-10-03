@@ -133,4 +133,4 @@ def run_simulation_head_to_head(raw_data_dir, output_csv_path, max_files=None):
     print(f"Results saved to {output_csv_path}")
 
 if __name__ == '__main__':
-    run_simulation_head_to_head('raw_data', 'scoring_results_head_to_head_temp.csv', max_files=1)
+    run_simulation_head_to_head('raw_data', 'scoring_results_head_to_head_10k.csv', max_files=1)
