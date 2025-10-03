@@ -189,6 +189,3 @@ def run_simulation(raw_data_dir: str, output_csv_path: str):
     df = pd.DataFrame(rows)
     df.to_csv(output_csv_path, index=False)
     print(f'Results saved to {output_csv_path}\nTotal decks processed: {total_decks}')
-
-if __name__ == '__main__':
-    run_simulation('raw_data', 'scoring_results_headtohead.csv')
