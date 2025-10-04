@@ -63,6 +63,7 @@ if __name__ == '__main__':
     # testing scoring based on time & memory
     def testing_scoring(func, *args, **kwargs):
         import time
+        import tracemalloc
         tracemalloc.start()
         start_time = time.time()
 
