@@ -14,10 +14,18 @@ Run the program
 
 `uv run main.py`
 
-## Contents
+## Project Structure
 
-`data_gen.py` Contains the functions and code used for generating a deck utilizing method 1 (described in `DataGeneration.md`)
+`main.py`: The main script to run the full data generation and scoring pipeline.
 
-`raw_data` Contains the data generated (2 million entries)
+`src/data_gen.py`: Contains functions for generating simulated card decks.
 
-`score_ju.py` runs and scores the decks and outputs a csv titled "scoring_results_head_to_head_1M"
+`src/score_1.py`: Implements the first scoring method.
+
+`src/score_2.py`: Implements the second scoring method.
+
+`raw_data/`: The directory where raw deck data is stored.
+
+`results/`: The default directory for output CSV files.
+
+`Scoring.md`: A detailed document describing and comparing the two scoring methods.
