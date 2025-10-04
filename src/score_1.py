@@ -3,7 +3,7 @@ import os
 import itertools
 import pandas as pd
 from multiprocessing import Pool, cpu_count
-
+ 
 def get_players():
     """Return all 8 players as 3-bit binary strings."""
     return [f'{i:03b}' for i in range(8)]
