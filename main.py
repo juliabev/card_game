@@ -1,7 +1,7 @@
 import src.data_gen as dg
-import src.score_1 as sc1
+#import archive.score_1 as sc1
 import src.score_2 as sc2
-#import src.viz as viz
+import src.viz as viz
 import json
 import math
 import time
@@ -78,8 +78,8 @@ if __name__ == '__main__':
         print(f"Current memory usage: {current / 10**6:.2f}MB")
         print(f"Peak memory usage: {peak / 10**6:.2f}MB")
 
-    output_path_1 = os.path.join(args.output_dir, 'scoring_results1.csv')
+    #output_path_1 = os.path.join(args.output_dir, 'scoring_results1.csv')
     output_path_2 = os.path.join(args.output_dir, 'scoring_resultsx2.csv')
 
-    testing_scoring(sc1.run_simulation, 'raw_data', output_path_1)
+    #testing_scoring(sc1.run_simulation, 'raw_data', output_path_1)
     testing_scoring(sc2.run_simulation, 'raw_data', output_path_2)
