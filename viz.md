@@ -1,4 +1,4 @@
-Visualization Instructins
+Visualization Instructions
 
 Include the sample size in the title
 Make sure the title includes which scoring method (By Tricks or By Cards)
