@@ -5,11 +5,7 @@ In an appropriate folder, include a .csv file that shows wins, draws, etc. by th
 
 *Method 1*:
 
-The `score_1.py` script implements a head-to-head scoring logic to determine the winner for each combination of players on each deck. The scoring is performed in a turn-based manner. For each deck, the script finds the first occurrence of either player's sequence. The player whose sequence appears first wins that "turn" and receives points based on the "card" (position of the match) and "trick" (number of matches) logic. The search then continues from that point in the deck for the next match.
-
-At the end of each deck, the players' total "card" and "trick" scores are compared. The player with the higher score for "cards" gets a "card win" for that deck, and the same logic is applied to "tricks". If the scores are equal, the deck is counted as a "draw" for that category.
-
-The script aggregates these wins and draws over all the decks, and the final output is a CSV file showing the total number of wins and draws for each player combination.
+The `score_1.py` script implements a head-to-head scoring logic to determine the winner for each combination of players on each deck. The scoring is performed in a turn-based manner: the script scans a deck left-to-right and when a player’s 3-bit sequence is matched that player wins the current turn and receives points based on the number of cards captured by that match (i.e., the cards removed from play when the sequence is matched) and the trick count (one trick per matched sequence). The search then continues from the point after the captured cards for the next match. At the end of each deck, the players’ total card and trick scores are compared; the player with the higher cards total receives a card win for that deck (and similarly for tricks), while equal totals are recorded as draws. The script aggregates these wins and draws across all decks and writes the final summary to a CSV file (`scoring_results1.csv`).
 
 
 *Method 2*:
