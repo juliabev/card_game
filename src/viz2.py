@@ -1,4 +1,3 @@
-=======
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -98,4 +97,3 @@ def augment_data(n: int, raw_data_dir: str = 'raw_data', results_dir: str = 'res
     # Create heatmaps
     create_heatmap(output_csv_path, 'By Tricks', results_dir)
     create_heatmap(output_csv_path, 'By Cards', results_dir)
->>>>>>> 981249fd05a17de341b916c39c909cdfd978a85e
