@@ -62,6 +62,10 @@ def plot_heatmap(win_df: pd.DataFrame,
         fmt='',
         annot_kws={'fontsize': 9}
     )
+
+    ax.set_xlabel("My choice", fontsize=12, labelpad=10, weight='bold')
+    ax.set_ylabel("Opponent choice", fontsize=12, labelpad=10, weight='bold')
+                     
     ax.set_title(f'{title} - {total_decks} Decks Simulated', pad=14, fontsize=14, weight='bold')
 
     plt.tight_layout()
