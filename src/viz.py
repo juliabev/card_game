@@ -47,7 +47,7 @@ def plot_heatmap(win_df: pd.DataFrame,
                  total_decks: int,
                  cmap: str = 'Blues') -> None:
     '''
-    Generates and saves a styled heatmap plot.
+    Generates and saves a styled heatmap plot. Used gemini and ChatGPT to check plotting specifics.
     '''
     ensure_dir(os.path.dirname(out_png))
     plt.figure(figsize=(9, 8))
