@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib.patches as patches
 from matplotlib.ticker import PercentFormatter
 
 from typing import List
@@ -65,8 +66,19 @@ def plot_heatmap(win_df: pd.DataFrame,
 
     ax.set_xlabel("My choice", fontsize=12, labelpad=10, weight='bold')
     ax.set_ylabel("Opponent choice", fontsize=12, labelpad=10, weight='bold')
-                     
     ax.set_title(f'{title} - {total_decks} Decks Simulated', pad=14, fontsize=14, weight='bold')
+
+    for i, row in enumerate(win_df.to_numpy()):
+        if np.all(np.isnan(row)):
+            continue 
+        j = np.nanargmax(row)
+        rect = patches.Rectangle(
+            (j, i), 1, 1,
+            fill=False,
+            edgecolor='black',
+            linewidth=2.2
+        )
+        ax.add_patch(rect)
 
     plt.tight_layout()
     plt.savefig(out_png, bbox_inches='tight', dpi=300)
