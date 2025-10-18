@@ -64,6 +64,11 @@ def plot_heatmap(win_df: pd.DataFrame,
     )
     ax.set_title(f'{title} - {total_decks} Decks Simulated', pad=14, fontsize=14, weight='bold')
 
+    plt.tight_layout()
+    plt.savefig(out_png, bbox_inches='tight', dpi=300)
+    plt.close()
+    print(f"[viz] Saved heatmap to {os.path.abspath(out_png)}")
+
 def run_visualization(csv_path: str, outdir: str, total_decks: int):
     '''
     Main function to read scoring CSV and generate heatmap visualizations.
