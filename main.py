@@ -7,7 +7,7 @@ import time
 import os
 
 # --- Configuration ---
-TOTAL_DECKS = 20_000
+TOTAL_DECKS = 2_000_000
 BATCH_SIZE = 10_000
 RAW_DATA_DIR = './raw_data'
 RESULTS_DIR = './results'
