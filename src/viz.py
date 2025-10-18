@@ -1,14 +1,16 @@
 import os
-import json
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.ticker import PercentFormatter
-import argparse
-from typing import Optional, List
 
-SEQUENCES: List[str] = ['000','001','010','011','100','101','110','111']
+from typing import List
+
+SEQUENCES_BINARY: List[str] = ['000','001','010','011','100','101','110','111']
+SEQUENCES_MAPPED: List[str] = ['BBB', 'BBR', 'BRB', 'BRR', 'RBB', 'RBR', 'RRB', 'RRR']
+SEQUENCE_MAP = dict(zip(SEQUENCES_BINARY, SEQUENCES_MAPPED))
+
 
 def ensure_dir(path: str):
     '''
@@ -17,65 +19,35 @@ def ensure_dir(path: str):
     if path:
         os.makedirs(path, exist_ok=True)
 
-def load_summary(path: str) -> dict:
-    '''
-    Loads summary from summary.json
-    '''
-    with open(path, 'r', encoding='utf-8') as f:
-        return json.load(f)
 
-def _to_8x8(a) -> np.ndarray:
+
+def make_annotations(win_df: pd.DataFrame, tie_rate_df: pd.DataFrame) -> np.ndarray:
     '''
-    
+    Creates annotation strings showing win % and tie %.
     '''
-    arr = np.array(a)
-    if arr.size == 64 and arr.ndim == 1:
-        arr = arr.reshape(8, 8)
-    if arr.shape != (8, 8):
-        raise ValueError(f'Expected (8,8), got {arr.shape}')
-    return arr.astype(float)
+    win_np = win_df.to_numpy()
+    tie_rate_np = tie_rate_df.to_numpy()
+    ann = np.empty(win_np.shape, dtype=object)
 
-def _reindex_for_display(mat: np.ndarray) -> pd.DataFrame:
-    '''
-    
-    '''
-    # Put '000' at bottom-left by reversing row order
-    df = pd.DataFrame(mat, index=SEQUENCES, columns=SEQUENCES)
-    return df.loc[SEQUENCES[::-1], :]
-
-def _pick_key(d: dict, prefer: str, fallback: str) -> str:
-    if prefer in d: return prefer
-    if fallback in d: return fallback
-    raise KeyError(f"Neither '{prefer}' nor '{fallback}' found in summary.json")
-
-def make_annotations(win_df: pd.DataFrame,
-                     tie_df: Optional[pd.DataFrame],
-                     n: Optional[int] = None) -> np.ndarray:
-    win = np.rint(win_df.to_numpy() * 100).astype(int)
-    ann = np.empty(win.shape, dtype=object)
-    if tie_df is None:
-        for i in range(win.shape[0]):
-            for j in range(win.shape[1]):
-                ann[i, j] = f"{win[i, j]}"
-        return ann
-
-    tie_vals = tie_df.to_numpy()
-    # If we don’t know n, show tie; else show tie counts
-    if n is None:
-        tie_disp = (np.rint(tie_vals * 100).astype(int)).astype(str)
-    else:
-        tie_disp = np.rint(tie_vals * n).astype(int).astype(str)
-
-    for i in range(win.shape[0]):
-        for j in range(win.shape[1]):
-            ann[i, j] = f"{win[i, j]} ({tie_disp[i, j]})"
+    for i in range(win_np.shape[0]):
+        for j in range(win_np.shape[1]):
+            if np.isnan(win_np[i, j]):
+                ann[i, j] = ''
+            else:
+                win_val = int(np.rint(win_np[i, j] * 100))
+                tie_val = int(np.rint(tie_rate_np[i, j] * 100))
+                ann[i, j] = f'{win_val} ({tie_val})'
     return ann
 
 def plot_heatmap(win_df: pd.DataFrame,
                  ann: np.ndarray,
                  title: str,
                  out_png: str,
-                 cmap: str = 'viridis') -> None:
+                 total_decks: int,
+                 cmap: str = 'Blues') -> None:
+    '''
+    Generates and saves a styled heatmap plot.
+    '''
     ensure_dir(os.path.dirname(out_png))
     plt.figure(figsize=(9, 8))
     ax = sns.heatmap(
@@ -90,48 +62,55 @@ def plot_heatmap(win_df: pd.DataFrame,
         fmt='',
         annot_kws={'fontsize': 9}
     )
-    ax.set_title(title, pad=14, fontsize=14, weight='bold')
-    ax.set_xlabel('P2 (me): chosen sequence', labelpad=10)
-    ax.set_ylabel('P1 (opponent): chosen sequence', labelpad=10)
+    ax.set_title(f'{title} - {total_decks} Decks Simulated', pad=14, fontsize=14, weight='bold')
 
-    cbar = ax.collections[0].colorbar
-    cbar.ax.yaxis.set_major_formatter(PercentFormatter(xmax=1))
+def run_visualization(csv_path: str, outdir: str, total_decks: int):
+    '''
+    Main function to read scoring CSV and generate heatmap visualizations.
+    '''
+    if not os.path.exists(csv_path):
+        print(f'Error: CSV file not found at {csv_path}')
+        return
 
-    plt.tight_layout()
-    plt.savefig(out_png, dpi=300, bbox_inches='tight')
-    plt.close()
+    df = pd.read_csv(csv_path, dtype={'player1': str, 'player2': str})
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument('--summary', default=os.path.join('data', 'summary.json'),
-                    help='Path to summary.json (default: data/summary.json)')
-    ap.add_argument('--outdir', default='figures', help='Output directory for PNGs')
-    args = ap.parse_args()
+    # Initialize 8x8 matrices for win and tie rates
+    cards_wins = pd.DataFrame(np.nan, index=SEQUENCES_BINARY, columns=SEQUENCES_BINARY)
+    tricks_wins = pd.DataFrame(np.nan, index=SEQUENCES_BINARY, columns=SEQUENCES_BINARY)
+    cards_ties = pd.DataFrame(np.nan, index=SEQUENCES_BINARY, columns=SEQUENCES_BINARY)
+    tricks_ties = pd.DataFrame(np.nan, index=SEQUENCES_BINARY, columns=SEQUENCES_BINARY)
 
-    results = load_summary(args.summary)
-    n = results.get('n', None)
+    # Populate matrices from the CSV data
+    for _, row in df.iterrows():
+        p1 = row['player1']
+        p2 = row['player2']
+        cards_wins.loc[p1, p2] = row['cards_p2_win_rate']
+        tricks_wins.loc[p1, p2] = row['tricks_p2_win_rate']
+        cards_ties.loc[p1, p2] = row['cards_tie_rate']
+        tricks_ties.loc[p1, p2] = row['tricks_tie_rate']
 
-    # key in your code are singular: 'card_ties'/'trick_ties'
-    cards_key = 'cards'
-    tricks_key = 'tricks'
-    cards_ties_key = _pick_key(results, 'cards_ties', 'card_ties')
-    tricks_ties_key = _pick_key(results, 'tricks_ties', 'trick_ties')
+    cards_wins.rename(index=SEQUENCE_MAP, columns=SEQUENCE_MAP, inplace=True)
+    tricks_wins.rename(index=SEQUENCE_MAP, columns=SEQUENCE_MAP, inplace=True)
+    cards_ties.rename(index=SEQUENCE_MAP, columns=SEQUENCE_MAP, inplace=True)
+    tricks_ties.rename(index=SEQUENCE_MAP, columns=SEQUENCE_MAP, inplace=True)
 
-    # load matrices
-    cards = _reindex_for_display(_to_8x8(results[cards_key]))
-    tricks = _reindex_for_display(_to_8x8(results[tricks_key]))
-    cards_ties = _reindex_for_display(_to_8x8(results[cards_ties_key]))
-    tricks_ties = _reindex_for_display(_to_8x8(results[tricks_ties_key]))
+    # Reorder rows for display
+    cards_wins_disp = cards_wins
+    tricks_wins_disp = tricks_wins
+    cards_ties_disp = cards_ties
+    tricks_ties_disp = tricks_ties
 
-    # add annotations to head map
-    ann_cards = make_annotations(cards, cards_ties, n=n)
-    ann_tricks = make_annotations(tricks, tricks_ties, n=n)
+    # Create annotation labels
+    ann_cards = make_annotations(cards_wins_disp, cards_ties_disp)
+    ann_tricks = make_annotations(tricks_wins_disp, tricks_ties_disp)
 
-    # Plots
-    plot_heatmap(cards, ann_cards,
-                 title='Chance of Winning (By Cards)',
-                 out_png=os.path.join(args.outdir, 'heatmap_by_cards.png'))
+    # Generate and save plots
+    plot_heatmap(cards_wins_disp, ann_cards,
+                 title='My Chance of Winning(Draw) by Cards',
+                 out_png=os.path.join(outdir, 'heatmap_by_cards.png'),
+                 total_decks=total_decks)
 
-    plot_heatmap(tricks, ann_tricks,
-                 title='Chance of Winning (By Tricks)',
-                 out_png=os.path.join(args.outdir, 'heatmap_by_tricks.png'))
+    plot_heatmap(tricks_wins_disp, ann_tricks,
+                 title='My Chance of Winning(Draw) by Tricks',
+                 out_png=os.path.join(outdir, 'heatmap_by_tricks.png'),
+                 total_decks=total_decks)

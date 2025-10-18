@@ -1,85 +1,114 @@
 import src.data_gen as dg
-#import archive.score_1 as sc1
-import src.score_2 as sc2
+import src.score as sc
 import src.viz as viz
 import json
 import math
 import time
 import os
 
-#TOTAL_DECKS = 2_000_000
-TOTAL_DECKS = 100_000
+# --- Configuration ---
+TOTAL_DECKS = 20_000
 BATCH_SIZE = 10_000
-RAW_DIR = './raw_data'
-SCORED_DIR = './scored_data'
-OUTPUT_DIR = './results'
-
+RAW_DATA_DIR = './raw_data'
+RESULTS_DIR = './results'
 SEED = 12345
+# -------------------
 
-if __name__ == '__main__':
+def augment_data(n: int):
     '''
-    # Data generation
-    dg.ensure_dir(RAW_DIR)
+    Generates n new decks, and automatically updates scores and figures.
+    '''
+    print(f'--- Augmenting data with {n} new decks ---')
+
+    # 1. Data Generation
+    dg.ensure_dir(RAW_DATA_DIR)
+    n_batches = math.ceil(n / BATCH_SIZE)
+    prod = 0
+
+    # Find the next available batch index
+    raw_files = [f for f in os.listdir(RAW_DATA_DIR) if f.endswith('.npz')]
+    next_batch_idx = len(raw_files)
+
+    for b in range(n_batches):
+        this_size = min(BATCH_SIZE, n - prod)
+        batch_idx = next_batch_idx + b
+        dg.simulate_batch(
+            batch_idx=batch_idx,
+            batch_size=this_size,
+            out_dir=RAW_DATA_DIR,
+            seed=SEED + batch_idx # Use a new seed for each batch
+        )
+        prod += this_size
+
+    print(f'--- {n} new decks generated in {n_batches} batches ---')
+
+    # 2. Scoring
+    print('\n--- Re-running Scoring ---')
+    output_csv_path = os.path.join(RESULTS_DIR, 'scoring_results.csv')
+    total_decks = sc.run_simulation(RAW_DATA_DIR, output_csv_path)
+    print('--- Scoring Complete ---')
+
+    # 3. Visualization
+    print('\n--- Re-generating Visualizations ---')
+    viz.run_visualization(csv_path=output_csv_path, outdir=RESULTS_DIR, total_decks=total_decks)
+    print('--- Visualizations Complete ---')
+
+
+import argparse
+
+def run_full_process():
+    '''
+    This script serves as the main entry point to run the full project pipeline.
+    It orchestrates the following steps:
+    1. Generates simulated card deck data.
+    2. Runs the scoring simulation on the generated data.
+    3. Creates and saves heatmap visualizations of the results.
+    '''
+    # --- 1. Data Generation ---
+    print('--- Step 1: Generating Data ---')
+    dg.ensure_dir(RAW_DATA_DIR)
     n_batches = math.ceil(TOTAL_DECKS / BATCH_SIZE)
     prod = 0
 
-    results = {'batch_idx': [], 'gen_write_time_s': [], 'file_mb': []}
+    gen_results = {'batch_idx': [], 'gen_write_time_s': [], 'file_mb': []}
 
     for b in range(n_batches):
         this_size = min(BATCH_SIZE, TOTAL_DECKS - prod)
         t0 = time.perf_counter()
-        path = dg.simulate_batch(b, this_size, RAW_DIR, seed=SEED + b)
+        path = dg.simulate_batch(b, this_size, RAW_DATA_DIR, seed=SEED + b)
         t1 = time.perf_counter()
         size_mb = os.path.getsize(path) / (1024**2)
 
-        results['batch_idx'].append(b)
-        results['gen_write_time_s'].append(t1 - t0)
-        results['file_mb'].append(size_mb)
+        gen_results['batch_idx'].append(b)
+        gen_results['gen_write_time_s'].append(t1 - t0)
+        gen_results['file_mb'].append(size_mb)
 
         prod += this_size
 
-    with open(os.path.join(RAW_DIR, 'perf_results.json'), 'w') as f:
-        json.dump(results, f, indent=2)
+    with open(os.path.join(RAW_DATA_DIR, 'perf_results.json'), 'w') as f:
+        json.dump(gen_results, f, indent=2)
+    
+    print(f'Successfully generated {TOTAL_DECKS} decks in {n_batches} batches.')
 
-    print(json.dumps({
-        'total_decks': TOTAL_DECKS,
-        'batch_size': BATCH_SIZE,
-        'n_batches': n_batches,
-        'average_file_size': round((sum(results['file_mb'])/n_batches), 4),
-        'average_time_per_file_s': round((sum(results['gen_write_time_s'])/n_batches), 4),
-        'total_files_mb': round(sum(results['file_mb']), 4),
-        'total_time_s': round(sum(results['gen_write_time_s']), 4)
-    }, indent=2))
-    '''
+    # --- 2. Scoring ---
+    print('\n--- Step 2: Running Scoring Simulation ---')
+    dg.ensure_dir(RESULTS_DIR)
+    output_csv_path = os.path.join(RESULTS_DIR, 'scoring_results.csv')
+    total_decks = sc.run_simulation(RAW_DATA_DIR, output_csv_path)
 
-    import argparse
+    # --- 3. Visualization ---
+    print('\n--- Step 3: Generating Visualizations ---')
+    viz.run_visualization(csv_path=output_csv_path, outdir=RESULTS_DIR, total_decks=total_decks)
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--output-dir', default='results', help='Directory to save the output CSV files')
+    print('\n--- Pipeline Finished ---')
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Run the card game simulation pipeline.")
+    parser.add_argument('--augment', type=int, metavar='N', help='Generate N new decks and update scores and figures.')
+
     args = parser.parse_args()
 
-    os.makedirs(args.output_dir, exist_ok=True)
-
-    # testing scoring based on time & memory
-    def testing_scoring(func, *args, **kwargs):
-        import time
-        import tracemalloc
-        tracemalloc.start()
-        start_time = time.time()
-
-        func(*args, **kwargs)
-
-        end_time = time.time()
-        current, peak = tracemalloc.get_traced_memory()
-        tracemalloc.stop()
-
-        print(f"--- {func.__name__} ---")
-        print(f"Execution time: {end_time - start_time:.4f} seconds")
-        print(f"Current memory usage: {current / 10**6:.2f}MB")
-        print(f"Peak memory usage: {peak / 10**6:.2f}MB")
-
-    #output_path_1 = os.path.join(args.output_dir, 'scoring_results1.csv')
-    output_path_2 = os.path.join(args.output_dir, 'scoring_resultsx2.csv')
-
-    #testing_scoring(sc1.run_simulation, 'raw_data', output_path_1)
-    testing_scoring(sc2.run_simulation, 'raw_data', output_path_2)
+    if args.augment:
+        augment_data(args.augment)
+    else:
+        run_full_process()
