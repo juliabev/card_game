@@ -20,12 +20,14 @@ Run the program
 
 `src/data_gen.py`: Contains functions for generating simulated card decks.
 
-`src/score_1.py`: Implements the first scoring method.
+`src/score.py`: Implements the scoring method.
 
-`src/score_2.py`: Implements the second scoring method.
+`src/viz.py`: Implements the visualization method.
 
 `raw_data/`: The directory where raw deck data is stored.
 
 `results/`: The default directory for output CSV files.
 
 `Scoring.md`: A detailed document describing and comparing the two scoring methods.
+
+`viz.md`: A detailed document describing and comparing the visualization method.
