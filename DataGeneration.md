@@ -12,7 +12,9 @@ Method 2 generates randomized decks and all possible combination match-ups and s
 
 
 ### Which method is preferred?
-Method 1 is preferred as the average time per file and total time is shorter. Method 1 also stores the decks in numpy arrays as integers, which is a lot more effective when it comes to data generation and storage.
+Method 1 is preferred as the average time per file and total time is shorter. Method 1 also stores the decks in numpy arrays as integers, which is a lot more effective when it comes to data generation and storage. 
+
+We have archived the second method due to our preference of the first method, and changed the name to "score.py".
 
 
 Table 1. Quantitative Testing (Time & File Size)
