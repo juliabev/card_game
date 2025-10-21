@@ -12,7 +12,7 @@ Once UV is installed, download the repository, navigate to the directory and run
 
 Run the program
 
-`uv run main.py`
+`uv run main.py -- augment 5000000` to create 5000000 new decks and automatically update scores and figures.
 
 ## Project Structure
 
